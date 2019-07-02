@@ -9,16 +9,18 @@
 `gcloud iam service-accounts create  spinnaker-account --display-name spinnaker-account` 
 
 ### Export some variables in order to use in commands later
-`export SA_EMAIL=$(gcloud iam service-accounts list \`
-
-`    --filter="displayName:spinnaker-account" \`
-    
-`    --format='value(email)')`
-    
-`export PROJECT=$(gcloud info --format='value(config.project)')`
+```
+export SA_EMAIL=$(gcloud iam service-accounts list \
+    --filter="displayName:spinnaker-account" \
+    --format='value(email)')
+export PROJECT=$(gcloud info --format='value(config.project)')
+```
 
 ### Spinnaker needs to keep its configuration on a storage; assign storage.admin role to the service account
-`gcloud projects add-iam-policy-binding $PROJECT --role roles/storage.admin --member serviceAccount:$SA_EMAIL`
+```
+gcloud projects add-iam-policy-binding $PROJECT \
+  --role roles/storage.admin --member serviceAccount:$SA_EMAIL
+```
 
 ### Download service account's key; it will be passed to halyard
 `gcloud iam service-accounts keys create spinnaker-sa.json --iam-account $SA_EMAIL`
@@ -45,3 +47,14 @@
 `gsutil mb -c regional -l us-central1 gs://$BUCKET`
 
 ### Create Spinnaker Config
+https://github.com/volkantufekci/spinnaker_gcp_bluegreen/blob/master/spinnaker-config.yaml
+
+### Deploy Spinnaker
+`helm install -n cd stable/spinnaker -f spinnaker-config.yaml --timeout 600  --version 1.13.0 --wait`
+
+### Connect to Spinnaker via port-forward
+```
+export DECK_POD=$(kubectl get pods --namespace default -l "cluster=spin-deck" \
+    -o jsonpath="{.items[0].metadata.name}")
+kubectl port-forward --namespace default $DECK_POD 8080:9000 >> /dev/null &
+```
