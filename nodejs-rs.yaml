@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  annotations:
+    strategy.spinnaker.io/max-version-history: '2'
+    traffic.spinnaker.io/load-balancers: '["service nodejs-svc"]'
+  labels:
+    tier: frontend
+  name: nodejs
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: nodejs
+        tier: frontend
+    spec:
+      containers:
+        - image: 'gcr.io/standalone-182812/nodejs-dummy-app:v1'
+          name: nodejs
