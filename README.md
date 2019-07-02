@@ -1,6 +1,6 @@
 # spinnaker_gcp_bluegreen
 
-* `gcloud config set compute/zone us-central1-f` 
+`gcloud config set compute/zone us-central1-f` 
 
 ### Create a GKE Cluster
 `gcloud container clusters create alyans2 --machine-type=n1-standard-2` 
@@ -58,3 +58,20 @@ export DECK_POD=$(kubectl get pods --namespace default -l "cluster=spin-deck" \
     -o jsonpath="{.items[0].metadata.name}")
 kubectl port-forward --namespace default $DECK_POD 8080:9000 >> /dev/null &
 ```
+
+# Blue Green Deployment
+
+## Create Load Balancer (K8S Service with NodePort)
+https://github.com/volkantufekci/spinnaker_gcp_bluegreen/blob/master/nodejs-svc.yaml
+
+## Create ServerGroup (K8S ReplicaSet)
+https://github.com/volkantufekci/spinnaker_gcp_bluegreen/blob/master/nodejs-rs.yaml
+
+## Create Pipeline
+
+### Add Deploy (Manifest) Stage
+Use the same manifest yaml file for nodejs-rs.yaml
+
+### Add Disable (Manifest) Stage
+* Choose the replicaSet for Kind
+* Choose "Second Newest" for Target
